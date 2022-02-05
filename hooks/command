@@ -115,7 +115,7 @@ job_spec="$(echo "$job_spec" | jq ".spec.template.spec.containers[$step_index].a
 
 agent_spec="$(kubectl get pod "$(cat /etc/hostname)" -o json)"
 node_name="$(curl http://169.254.169.254/latest/meta-data/local-hostname)"
-job_spec="$(echo "$job_spec" | jq ".spec.nodeName=\"$node_name\"")"
+job_spec="$(echo "$job_spec" | jq ".spec.template.spec.nodeName=\"$node_name\"")"
 
 if [[ "$use_agent_node_affinity" == "true" ]]; then
   for field in affinity tolerations nodeSelector; do
