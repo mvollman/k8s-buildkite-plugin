@@ -95,6 +95,10 @@ step_index="$(echo "$job_spec" | jq '.spec.template.spec.containers | to_entries
 
 job_spec="$(echo "$job_spec" | jq ".spec.template.spec.containers[$step_index].volumeMounts=[{\"name\":\"k8s-plugin\",\"mountPath\":\"/k8s-plugin\"}]")"
 
+job_spec="$(echo "$job_spec" | jq ".spec.template.spec.containers[$step_index].command=[\"/bin/sh\",\"-c\"]")"
+
+job_spec="$(echo "$job_spec" | jq ".spec.template.spec.containers[$step_index].args=[\"/k8s-plugin/bin/wait_for_deps.sh && $BUILDKITE_COMMAND\"]")"
+
 if [[ "$use_agent_node_affinity" == "true" ]]; then
   agent_spec="$(kubectl get pod "$(cat /etc/hostname)" -o json)"
   for field in affinity tolerations nodeSelector; do
