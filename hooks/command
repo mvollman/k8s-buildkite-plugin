@@ -87,13 +87,27 @@ job_spec="$(yq r -j $BUILDKITE_PLUGIN_K8S_JOB_SPEC)"
 jq --version
 set +e
 job_spec="$(echo "$job_spec" | jq ".metadata.name=\"$job_name\"")"
-set -e
 
-job_spec="$(echo "$job_spec" | jq ".spec.template.spec.volumes=[{\"name\":\"k8s-plugin\",\"hostPath\":{\"path\":\"$basedir\"}}]")"
+volumes_last_index="$(echo "$job_spec" | jq '.spec.template.spec.volumes | to_entries | .[-1].key')"
+if [ $? -ne 0 ]; then
+  job_spec="$(echo "$job_spec" | jq ".spec.template.spec.volumes=[{\"name\":\"k8s-plugin\",\"hostPath\":{\"path\":\"$basedir\"}}]")"
+else
+  volumes_last_index=$(($volumes_last_index + 1))
+  job_spec="$(echo "$job_spec" | jq ".spec.template.spec.volumes[$volumes_last_index]={\"name\":\"k8s-plugin\",\"hostPath\":{\"path\":\"$basedir\"}}")"
+fi
+set -e
 
 step_index="$(echo "$job_spec" | jq '.spec.template.spec.containers | to_entries | .[] | select(.value.name == "step") | .key')"
 
-job_spec="$(echo "$job_spec" | jq ".spec.template.spec.containers[$step_index].volumeMounts=[{\"name\":\"k8s-plugin\",\"mountPath\":\"/k8s-plugin\"}]")"
+set +e
+volumemounts_last_index="$(echo "$job_spec" | jq ".spec.template.spec.containers[$step_index].volumeMounts | to_entries | .[-1].key")"
+if [ $? -ne 0 ]; then
+  job_spec="$(echo "$job_spec" | jq ".spec.template.spec.containers[$step_index].volumeMounts=[{\"name\":\"k8s-plugin\",\"mountPath\":\"/k8s-plugin\"}]")"
+ else
+  volumemounts_last_index=$(($volumemounts_last_index + 1))
+  job_spec="$(echo "$job_spec" | jq ".spec.template.spec.containers[$step_index].volumeMounts[$volumemounts_last_index]={\"name\":\"k8s-plugin\",\"mountPath\":\"/k8s-plugin\"}")"
+fi
+set -e
 
 job_spec="$(echo "$job_spec" | jq ".spec.template.spec.containers[$step_index].command=[\"/bin/sh\",\"-c\"]")"
 
@@ -106,6 +120,16 @@ if [[ "$use_agent_node_affinity" == "true" ]]; then
     job_spec="$(echo "$job_spec" | jq ".spec.template.spec.$field=$agent_value")"
   done
 fi
+
+set +e
+envs_last_index="$(echo "$job_spec" | jq ".spec.template.spec.containers[$step_index].env | to_entries | .[-1].key")"
+if [ $? -ne 0 ]; then
+  job_spec="$(echo "$job_spec" | jq ".spec.template.spec.containers[$step_index].env=[{\"name\":\"POD_SPEC_JSON\",\"value\":\"$job_spec\"}]")"
+else
+  envs_last_index=$(($envs_last_index + 1))
+  job_spec="$(echo "$job_spec" | jq ".spec.template.spec.containers[$step_index].env[$envs_last_index]={\"name\":\"POD_SPEC_JSON\",\"value\":\"$job_spec\"}")"
+fi
+set -e
 
 if [[ "$print_resulting_job_spec" == "true" ]]; then
   echo -e "Resulting k8s job spec:\n$job_spec"
