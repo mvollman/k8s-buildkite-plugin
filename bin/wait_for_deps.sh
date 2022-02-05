@@ -1,6 +1,10 @@
 #!/bin/bash
 
-echo "$POD_SPEC_JSON" | jq .
+basedir="$(dirname $0)"
+
+${basedir}/kubectl get pod $POD_NAME
+
+echo "$POD_SPEC_JSON" | ${basedir}/jq .
 
 retv=1
 
