@@ -83,14 +83,11 @@ function tail_logs {
 
 echo "--- :kubernetes: Starting Kubernetes Job"
 
-export patchFunc=${BUILDKITE_PLUGIN_K8S_PATCH:-"function(f) f"}
-
-job_spec="$(jsonnet \
-  --tla-str "jobName=${job_name}" \
-  --tla-str-file "stepEnvFile=${BUILDKITE_ENV_FILE}" \
-  --tla-code "agentEnv=$(jq -c -n env)" \
-  --tla-code patchFunc \
-  "${basedir}/lib/job.jsonnet")"
+job_spec="$(yq r -j .buildkite/k8s-job.yaml))"
+jq --version
+set +e
+job_spec="$(echo "$job_spec" | jq ".metadata.name=\"$job_name\"")"
+set -e
 
 if [[ "$use_agent_node_affinity" == "true" ]]; then
   agent_spec="$(kubectl get pod "$(cat /etc/hostname)" -o json)"
@@ -129,7 +126,7 @@ fi
 
 echo "Timeout: ${timeout}s"
 
-echo "--- :kubernetes: Running image: ${BUILDKITE_PLUGIN_K8S_IMAGE}"
+#echo "--- :kubernetes: Running image: ${BUILDKITE_PLUGIN_K8S_IMAGE}"
 
 counter="$timeout"
 while true
@@ -165,33 +162,52 @@ done
 
 echo "Pod is running: $pod_name"
 
-if [[ -n "${BUILDKITE_PLUGIN_K8S_INIT_IMAGE}" ]]; then
-    echo "--- :kubernetes: bootstrap container"
-    tail_logs "$pod_name" "bootstrap" "$bootstrap_container_log_complete_marker_file"
-fi
+#if [[ -n "${BUILDKITE_PLUGIN_K8S_INIT_IMAGE}" ]]; then
+    #echo "--- :kubernetes: bootstrap container"
+    #tail_logs "$pod_name" "bootstrap" "$bootstrap_container_log_complete_marker_file"
+#fi
 
 echo "+++ :kubernetes: step container"
 tail_logs "$pod_name" "step" "$step_container_log_complete_marker_file" &
 
 counter="$timeout"
-jobstatus=""
-while [[ -z "$jobstatus" ]] ; do
+podstatus="null"
+while [[ "$podstatus" == "null" ]] ; do
   set +e
-  jobstatus=$(kubectl get job "${job_name}" -o 'jsonpath={.status.conditions[].type}')
+  podstatus=$(kubectl get pod "${pod_name}" -o json | jq -r '.status.containerStatuses[] | select(.name == "step") | .state.terminated.reason')
   set -e
 
-  if [[ -n "$jobstatus" ]]; then
+  if [[ "$podstatus" != "null" ]]; then
     break
   else
     sleep "$job_status_retry_interval_sec"
   fi
 
   if [[ $timeout -gt 0 ]]; then
-    (( counter -= job_status_retry_interval_sec )) || jobstatus="timed-out"
+    (( counter -= job_status_retry_interval_sec )) || podstatus="timed-out"
   fi
 done
 
-echo "--- :kubernetes: Job status: $jobstatus"
+echo "--- :kubernetes: Pod status: $podstatus"
+
+#jobstatus=""
+#while [[ -z "$jobstatus" ]] ; do
+  #set +e
+  #jobstatus=$(kubectl get job "${job_name}" -o 'jsonpath={.status.conditions[].type}')
+  #set -e
+
+  #if [[ -n "$jobstatus" ]]; then
+    #break
+  #else
+    #sleep "$job_status_retry_interval_sec"
+  #fi
+
+  #if [[ $timeout -gt 0 ]]; then
+    #(( counter -= job_status_retry_interval_sec )) || jobstatus="timed-out"
+  #fi
+#done
+
+#echo "--- :kubernetes: Job status: $jobstatus"
 
 # Wait for logs to be fully printed, printing runs in a separate process and we're racing with it.
 readonly log_complete_start_time="$SECONDS"
@@ -201,7 +217,7 @@ do
 done
 
 status=""
-if [[ "$jobstatus" == "Complete" ]] ; then
+if [[ "$podstatus" == "Completed" ]] ; then
   echo "success"
   status="0"
 else
@@ -216,7 +232,7 @@ else
         echo "Warning: init container failed with exit code $init_container_status, this usually indicates plugin misconfiguration or infrastructure failure"
         status="$init_container_status"
       else
-        if container_status="$(echo "$pod_json" | jq -e ".status.containerStatuses[0].state.terminated.exitCode")"; then
+        if container_status="$(echo "$pod_json" | jq -r '.status.containerStatuses[] | select(.name == "step") | .state.terminated.exitCode')"; then
           status=$container_status
         fi
       fi
@@ -226,7 +242,7 @@ else
     else
       echo "$pod_json" >&2
 
-      if container_status="$(echo "$pod_json" | jq -e ".status.containerStatuses[0].state.terminated.exitCode")"; then
+      if container_status="$(echo "$pod_json" | jq -r '.status.containerStatuses[] | select(.name == "step") | .state.terminated.exitCode')"; then
         status=$container_status
       fi
     fi
