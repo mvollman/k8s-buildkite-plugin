@@ -1,5 +1,7 @@
 #!/bin/bash
 
+echo "$POD_SPEC_JSON" | jq .
+
 retv=1
 
 while [ $retv -ne 0 ]; do
