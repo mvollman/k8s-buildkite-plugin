@@ -3,15 +3,15 @@
 basedir="$(dirname $0)"
 
 not_ready_count="$(${basedir}/kubectl get pod -o json $POD_NAME \
-	| jq -r '.status.containerStatuses[] | select(.ready != true) | .name' \
+	| ${basedir}/jq -r '.status.containerStatuses[] | select(.ready != true) | .name' \
 	| grep -v ^step$ \
 	| wc -l)"
 
-while [ $not_ready_count -gt 0 ]; then
+while [ $not_ready_count -gt 0 ]; do
   echo "Containers not ready $not_ready_count"
   sleep 5
   not_ready_count="$(${basedir}/kubectl get pod -o json $POD_NAME \
-	| jq -r '.status.containerStatuses[] | select(.ready != true) | .name' \
+	| ${basedir}/jq -r '.status.containerStatuses[] | select(.ready != true) | .name' \
 	| grep -v ^step$ \
 	| wc -l)"
 done
