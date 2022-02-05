@@ -89,6 +89,12 @@ set +e
 job_spec="$(echo "$job_spec" | jq ".metadata.name=\"$job_name\"")"
 set -e
 
+job_spec="$(echo "$job_spec" | jq ".spec.template.spec.volumes=[{\"name\":\"k8s-plugin\",\"hostpath\":{\"path\":\"$basedir\"}}]")"
+
+step_index="$(echo "$job_spec" | jq '.spec.template.spec.containers | to_entries | .[] | select(.value.name == "step") | .key')"
+
+job_spec="$(echo "$job_spec" | jq ".spec.template.spec.containers[$step_index].volumeMounts=[{\"name\":\"k8s-plugin\",\"mountPath\":\"/k8s-plugin\"}]")"
+
 if [[ "$use_agent_node_affinity" == "true" ]]; then
   agent_spec="$(kubectl get pod "$(cat /etc/hostname)" -o json)"
   for field in affinity tolerations nodeSelector; do
