@@ -2,9 +2,20 @@
 
 basedir="$(dirname $0)"
 
-${basedir}/kubectl get pod $POD_NAME
+not_ready_count="$(${basedir}/kubectl get pod -o json $POD_NAME \
+	| jq -r '.status.containerStatuses[] | select(.ready != true) | .name' \
+	| grep -v ^step$ \
+	| wc -l)"
 
-echo "$POD_SPEC_JSON" | ${basedir}/jq .
+while [ $not_ready_count -gt 0 ]; then
+  echo "Containers not ready $not_ready_count"
+  sleep 5
+  not_ready_count="$(${basedir}/kubectl get pod -o json $POD_NAME \
+	| jq -r '.status.containerStatuses[] | select(.ready != true) | .name' \
+	| grep -v ^step$ \
+	| wc -l)"
+done
+
 
 retv=1
 

@@ -127,16 +127,16 @@ if [[ "$use_agent_node_affinity" == "true" ]]; then
   done
 fi
 
-set +e
-sanitized_job_spec="$(echo "$job_spec" | jq -c . | sed -E 's/([^\]|^)"/\1\\"/g')"
-envs_last_index="$(echo "$job_spec" | jq ".spec.template.spec.containers[$step_index].env | to_entries | .[-1].key")"
-if [ $? -ne 0 ]; then
-  job_spec="$(echo "$job_spec" | jq ".spec.template.spec.containers[$step_index].env=[{\"name\":\"POD_SPEC_JSON\",\"value\":\"$sanitized_job_spec\"}]")"
-else
-  envs_last_index=$(($envs_last_index + 1))
-  job_spec="$(echo "$job_spec" | jq ".spec.template.spec.containers[$step_index].env[$envs_last_index]={\"name\":\"POD_SPEC_JSON\",\"value\":\"$sanitized_job_spec\"}")"
-fi
-set -e
+#set +e
+#sanitized_job_spec="$(echo "$job_spec" | jq -c . | sed -E 's/([^\]|^)"/\1\\"/g')"
+#envs_last_index="$(echo "$job_spec" | jq ".spec.template.spec.containers[$step_index].env | to_entries | .[-1].key")"
+#if [ $? -ne 0 ]; then
+  #job_spec="$(echo "$job_spec" | jq ".spec.template.spec.containers[$step_index].env=[{\"name\":\"POD_SPEC_JSON\",\"value\":\"$sanitized_job_spec\"}]")"
+#else
+  #envs_last_index=$(($envs_last_index + 1))
+  #job_spec="$(echo "$job_spec" | jq ".spec.template.spec.containers[$step_index].env[$envs_last_index]={\"name\":\"POD_SPEC_JSON\",\"value\":\"$sanitized_job_spec\"}")"
+#fi
+#set -e
 
 if [[ "$print_resulting_job_spec" == "true" ]]; then
   echo -e "Resulting k8s job spec:\n$job_spec"
