@@ -114,8 +114,11 @@ job_spec="$(echo "$job_spec" | jq ".spec.template.spec.containers[$step_index].c
 job_spec="$(echo "$job_spec" | jq ".spec.template.spec.containers[$step_index].args=[\"/k8s-plugin/bin/wait_for_deps.sh && $BUILDKITE_COMMAND\"]")"
 
 agent_spec="$(kubectl get pod "$(cat /etc/hostname)" -o json)"
-node_name="$(curl http://169.254.169.254/latest/meta-data/local-hostname)"
+#node_name="$(curl http://169.254.169.254/latest/meta-data/local-hostname)"
+node_name="$(echo "$agent_spec" | jq -r ".spec.nodeName")"
 job_spec="$(echo "$job_spec" | jq ".spec.template.spec.nodeName=\"$node_name\"")"
+service_account="$(echo "$agent_spec" | jq -r ".spec.serviceAccount")"
+job_spec="$(echo "$job_spec" | jq ".spec.template.spec.serviceAccount=\"$service_account\"")"
 
 if [[ "$use_agent_node_affinity" == "true" ]]; then
   for field in affinity tolerations nodeSelector; do
