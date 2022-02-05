@@ -89,7 +89,7 @@ set +e
 job_spec="$(echo "$job_spec" | jq ".metadata.name=\"$job_name\"")"
 set -e
 
-job_spec="$(echo "$job_spec" | jq ".spec.template.spec.volumes=[{\"name\":\"k8s-plugin\",\"hostpath\":{\"path\":\"$basedir\"}}]")"
+job_spec="$(echo "$job_spec" | jq ".spec.template.spec.volumes=[{\"name\":\"k8s-plugin\",\"hostPath\":{\"path\":\"$basedir\"}}]")"
 
 step_index="$(echo "$job_spec" | jq '.spec.template.spec.containers | to_entries | .[] | select(.value.name == "step") | .key')"
 
