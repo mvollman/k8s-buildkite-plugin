@@ -19,6 +19,9 @@ if [[ "$job_cleanup_after_finished_via_plugin" != "true" ]]; then
   exit 0
 fi
 
+kubectl delete job $job_name
+exit 0
+
 job_cleanup_exit_code=""
 while [[ "$((SECONDS - job_cleanup_start_time))" -lt "$job_cleanup_timeout_sec" ]]
 do
