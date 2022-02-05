@@ -122,12 +122,13 @@ if [[ "$use_agent_node_affinity" == "true" ]]; then
 fi
 
 set +e
+sanitized_job_spec="$(echo "$job_spec" | jq -c . | sed -E 's/([^\]|^)"/\1\\"/g')"
 envs_last_index="$(echo "$job_spec" | jq ".spec.template.spec.containers[$step_index].env | to_entries | .[-1].key")"
 if [ $? -ne 0 ]; then
-  job_spec="$(echo "$job_spec" | jq ".spec.template.spec.containers[$step_index].env=[{\"name\":\"POD_SPEC_JSON\",\"value\":\"job_spec\"}]")"
+  job_spec="$(echo "$job_spec" | jq ".spec.template.spec.containers[$step_index].env=[{\"name\":\"POD_SPEC_JSON\",\"value\":\"$sanitized_job_spec\"}]")"
 else
   envs_last_index=$(($envs_last_index + 1))
-  job_spec="$(echo "$job_spec" | jq ".spec.template.spec.containers[$step_index].env[$envs_last_index]={\"name\":\"POD_SPEC_JSON\",\"value\":\"job_spec\"}")"
+  job_spec="$(echo "$job_spec" | jq ".spec.template.spec.containers[$step_index].env[$envs_last_index]={\"name\":\"POD_SPEC_JSON\",\"value\":\"$sanitized_job_spec\"}")"
 fi
 set -e
 
