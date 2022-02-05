@@ -16,11 +16,13 @@ while [ $not_ready_count -gt 0 ]; do
 	| wc -l)"
 done
 
+echo "Containers ready!  Waiting 10s before starting command"
+sleep 10
 
-retv=1
+#retv=1
 
-while [ $retv -ne 0 ]; do
-  mysqladmin -h $DB_HOST -u$DB_USERNAME -p$DB_PASSWORD ping
-  retv=$?
-  sleep 5
-done
+#while [ $retv -ne 0 ]; do
+  #mysqladmin -h $DB_HOST -u$DB_USERNAME -p$DB_PASSWORD ping
+  #retv=$?
+  #sleep 5
+#done
