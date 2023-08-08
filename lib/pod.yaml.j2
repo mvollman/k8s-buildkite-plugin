@@ -1,0 +1,54 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  annotations:
+    cluster-autoscaler.kubernetes.io/safe-to-evict: "false"
+    kubernetes.io/psp: eks.privileged
+  labels:
+    app: beam-k8s-plugin
+    build_number: {{ build_number }}
+    environment: {{ environment }}
+    src-job-name: {{ job_name }}
+    pipeline_slug: {{ pipeline }}
+    queue: {{ queue }}
+  name: {{ pod_name }}
+  namespace: {{ namespace }}
+spec:
+  containers:
+  - args:
+    {{ args | to_yaml }}
+    command:
+    {{ command | to_yaml }}
+    env:
+    {{ env | to_yaml }}
+    image: {{ image }}
+    imagePullPolicy: IfNotPresent
+    name: app
+    resources:
+      limits:
+        cpu: {{ cpu_limits }}
+        memory: {{ memory_limits }}
+      requests:
+        cpu: {{ cpu_requests }}
+        memory: {{ memory_requests }}
+    volumeMounts:
+    - mountPath: /var/buildkite
+      name: buildkite-agent-store
+    - mountPath: /buildkite/builds
+      name: buildkite-builds-store
+    - mountPath: /var/run/docker.sock
+      name: var-run-docker-sock
+    - mountPath: /var/run/secrets/kubernetes.io/serviceaccount
+      name: kube-api-access-6gg94
+      readOnly: true
+    - mountPath: /var/run/secrets/eks.amazonaws.com/serviceaccount
+      name: aws-iam-token
+      readOnly: true
+  nodeName: {{ node_name }}
+  securityContext:
+    runAsGroup: {{ security_gid }}
+    runAsNonRoot: true
+    runAsUser: {{ security_uid }}
+  serviceAccount: {{ service_account }}
+  volumes:
+  {{ volumes | to_yaml }}
