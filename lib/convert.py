@@ -19,14 +19,24 @@ args = [os.environ['BUILDKITE_COMMAND']]
 command = ['/bin/sh', '-c']
 envs = []
 node_name = os.getenv('NODE_NAME')
-cpu_limits = os.getenv('BUILDKITE_PLUGIN_K8S_RESOURCES_REQUEST_CPU', '1')
-memory_limits = os.getenv('BUILDKITE_PLUGIN_K8S_RESOURCES_REQUEST_MEMORY', '2g')
-cpu_requests = os.getenv('BUILDKITE_PLUGIN_K8S_RESOURCES_LIMIT_CPU', '1')
-memory_requests = os.getenv('BUILDKITE_PLUGIN_K8S_RESOURCES_LIMIT_MEMORY', '2g')
+cpu_requests = os.getenv('BUILDKITE_PLUGIN_K8S_RESOURCES_REQUEST_CPU', '1')
+memory_requests = os.getenv('BUILDKITE_PLUGIN_K8S_RESOURCES_REQUEST_MEMORY', '2g')
+cpu_limits = os.getenv('BUILDKITE_PLUGIN_K8S_RESOURCES_LIMIT_CPU', '1')
+memory_limits = os.getenv('BUILDKITE_PLUGIN_K8S_RESOURCES_LIMIT_MEMORY', '2g')
 security_gid = os.getenv('BUILDKITE_PLUGIN_K8S_GID', '0')
 security_uid = os.getenv('BUILDKITE_PLUGIN_K8S_UID', '0')
 image = os.environ['BUILDKITE_PLUGIN_K8S_IMAGE']
 service_account = os.getenv('BUILDKITE_PLUGIN_K8S_SERVICE_ACCOUNT_NAME', 'default')
+volume_mounts = [
+        {
+            'mountPath': '/var/buildkite',
+            'name': 'buildkite-agent-store'
+        },
+        {
+            'mountPath': '/buildkite/builds',
+            'name': 'buildkite-builds-store'
+        }
+]
 volumes = [
         {
             'name': 'buildkite-builds-store',
@@ -65,6 +75,7 @@ with open(f"{script_directory}/pod.yaml.j2", 'r') as pod:
                 security_gid=security_gid,
                 security_uid=security_uid,
                 service_account=service_account,
+                volume_mounts=volume_mounts,
                 volumes=volumes
             )
     )
