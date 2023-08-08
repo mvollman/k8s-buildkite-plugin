@@ -7,25 +7,26 @@ import yaml
 
 script_directory = os.path.dirname(os.path.abspath(sys.argv[0]))
 
-pod_name = 'fake-pod-name'
-build_number = '10'
-environment = 'test'
-job_name = 'fake-job-name'
-pipeline = 'fake-pipeline'
-queue = 'default'
-namespace = 'buildkite'
-args = []
-command = 'sleep 10000'
-env = []
+build_number = os.environ['BUILDKITE_BUILD_NUMBER']
+build_id = os.environ['BUILDKITE_BUILD_ID']
+job_id = os.environ['BUILDKITE_JOB_ID']
+pipeline = os.environ['BUILDKITE_PIPELINE_SLUG']
+branch = os.environ['BUILDKITE_BRANCH']
+namespace = os.getenv('BUILDKITE_PLUGIN_K8S_NAMESPACE', 'default')
+full_pod_name = f'k8splug-{pipeline[:32]}-{job_id}'
+pod_name = full_pod_name[:63].lower()
+args = [os.environ['BUILDKITE_COMMAND']]
+command = ['/bin/sh', '-c']
+envs = []
 node_name = os.getenv('NODE_NAME')
-cpu_limits = '1'
-memory_limits = '2g'
-cpu_requests = '1'
-memory_requests = '2g'
-security_gid = 65356
-security_uid = 65356
-image = '932532311803.dkr.ecr.us-east-1.amazonaws.com/pipeline_libs:latest'
-service_account = 'buildkite-agent'
+cpu_limits = os.getenv('BUILDKITE_PLUGIN_K8S_RESOURCES_REQUEST_CPU', '1')
+memory_limits = os.getenv('BUILDKITE_PLUGIN_K8S_RESOURCES_REQUEST_MEMORY', '2g')
+cpu_requests = os.getenv('BUILDKITE_PLUGIN_K8S_RESOURCES_LIMIT_CPU', '1')
+memory_requests = os.getenv('BUILDKITE_PLUGIN_K8S_RESOURCES_LIMIT_MEMORY', '2g')
+security_gid = os.getenv('BUILDKITE_PLUGIN_K8S_GID', '0')
+security_uid = os.getenv('BUILDKITE_PLUGIN_K8S_UID', '0')
+image = os.environ['BUILDKITE_PLUGIN_K8S_IMAGE']
+service_account = os.getenv('BUILDKITE_PLUGIN_K8S_SERVICE_ACCOUNT_NAME', 'default')
 volumes = [
         {
             'name': 'buildkite-builds-store',
@@ -48,14 +49,13 @@ with open(f"{script_directory}/pod.yaml.j2", 'r') as pod:
             ).render(
                 pod_name=pod_name,
                 build_number=build_number,
-                environment=environment,
-                job_name=job_name,
+                job_id=job_id,
                 pipeline=pipeline,
-                queue=queue,
+                branch=branch,
                 namespace=namespace,
                 args=args,
                 command=command,
-                env=env,
+                envs=envs,
                 image=image,
                 cpu_limits=cpu_limits,
                 memory_limits=memory_limits,

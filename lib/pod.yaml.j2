@@ -5,25 +5,22 @@ metadata:
     cluster-autoscaler.kubernetes.io/safe-to-evict: "false"
     kubernetes.io/psp: eks.privileged
   labels:
+    buildkite/plugin: 'k8s'
+    build/branch: {{ branch }}
+    build/pipeline: {{ pipeline }}
     app: beam-k8s-plugin
     build_number: {{ build_number }}
-    environment: {{ environment }}
-    src-job-name: {{ job_name }}
+    src-job-id: {{ job_id }}
     pipeline_slug: {{ pipeline }}
-    queue: {{ queue }}
   name: {{ pod_name }}
   namespace: {{ namespace }}
 spec:
   containers:
-  - args:
-    {% for arg in args %}
-    - {arg}
-    {% endfor %}
+  - args: {{ args }}
     command: {{ command }}
     env:
     {% for env in envs %}
-    - {{ env.name }}
-      {{ env.value }}
+    - {{ env }}
     {% endfor %}
     image: {{ image }}
     imagePullPolicy: IfNotPresent
@@ -56,7 +53,5 @@ spec:
   serviceAccount: {{ service_account }}
   volumes:
   {% for volume in volumes %}
-  - {{ volume.name }}
-    hostpath:
-      path: {{ volume.hostpath }}
+  - {{ volume }}
   {% endfor %}
