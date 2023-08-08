@@ -2,8 +2,10 @@
 
 import jinja2
 import os
+import sys
 import yaml
 
+script_directory = os.path.dirname(os.path.abspath(sys.argv[0]))
 
 pod_name = 'fake-pod-name'
 build_number = '10'
@@ -39,7 +41,7 @@ volumes = [
         }
     ]
 
-with open("pod.yaml.j2", 'r') as pod:
+with open(f"{script_directory}/pod.yaml.j2", 'r') as pod:
     pod_template = yaml.safe_load(
             jinja2.Template(
                 pod.read()
