@@ -16,11 +16,15 @@ metadata:
 spec:
   containers:
   - args:
-    {{ args | to_yaml }}
-    command:
-    {{ command | to_yaml }}
+    {% for arg in args %}
+    - {arg}
+    {% endfor %}
+    command: {{ command }}
     env:
-    {{ env | to_yaml }}
+    {% for env in envs %}
+    - {{ env.name }}
+      {{ env.value }}
+    {% endfor %}
     image: {{ image }}
     imagePullPolicy: IfNotPresent
     name: app
@@ -51,4 +55,8 @@ spec:
     runAsUser: {{ security_uid }}
   serviceAccount: {{ service_account }}
   volumes:
-  {{ volumes | to_yaml }}
+  {% for volume in volumes %}
+  - {{ volume.name }}
+    hostpath:
+      path: {{ volume.hostpath }}
+  {% endfor %}
