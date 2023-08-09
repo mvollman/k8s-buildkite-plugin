@@ -27,6 +27,10 @@ security_gid = os.getenv('BUILDKITE_PLUGIN_K8S_GID', '0')
 security_uid = os.getenv('BUILDKITE_PLUGIN_K8S_UID', '0')
 image = os.environ['BUILDKITE_PLUGIN_K8S_IMAGE']
 service_account = os.getenv('BUILDKITE_PLUGIN_K8S_SERVICE_ACCOUNT_NAME', 'default')
+ttl_seconds_after_finished = os.getenv('BUILDKITE_PLUGIN_K8S_JOB_TTL_SECONDS_AFTER_FINISHED', '120')
+#active_deadline_seconds = os.getenv('BUILDKITE_TIMEOUT') * 60
+active_deadline_seconds = 0
+backoff_limit = os.getenv('BUILDKITE_PLUGIN_K8S_JOB_BACKOFF_LIMIT', 1)
 volume_mounts = [
         {
             'mountPath': '/var/buildkite',
