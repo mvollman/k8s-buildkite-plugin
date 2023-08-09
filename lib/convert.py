@@ -35,25 +35,25 @@ backoff_limit = os.getenv('BUILDKITE_PLUGIN_K8S_JOB_BACKOFF_LIMIT', 1)
 #backoff_limit = 1
 volume_mounts = [
         {
-            'mountPath': '/var/buildkite',
+            'mountPath': f'/var/buildkite/{job_name}',
             'name': 'buildkite-agent-store'
         },
         {
-            'mountPath': '/buildkite/builds',
+            'mountPath': f'/buildkite/builds/{job_name}-1',
             'name': 'buildkite-builds-store'
         }
 ]
 volumes = [
         {
             'name': 'buildkite-builds-store',
-            'hostpath': {
-                'path': '/buildkite/builds'
+            'hostPath': {
+                'path': f'/buildkite/builds/{job_name}-1'
             }
         },
         {
             'name': 'buildkite-agent-store',
-            'hostpath': {
-                'path': '/var/buildkite'
+            'hostPath': {
+                'path': f'/var/buildkite/{job_name}'
             }
         }
     ]
