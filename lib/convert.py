@@ -73,12 +73,13 @@ if 'BUILDKITE_PLUGIN_K8S_ENV_PROPAGATION_LIST' in os.environ:
 if os.getenv('BUILDKITE_PLUGIN_K8S_PROPAGATE_ENVIRONMENT', 'false') == 'true':
     if 'BUILDKITE_ENV_FILE' in os.environ:
         with open(os.environ['BUILDKITE_ENV_FILE'], 'r') as env_file:
-            line = env_file.read()
-            key, value = line.split(maxsplit=1)
-            envs.append({
-               'name': key,
-               'value': value
-            })
+            for line in env_file:
+                line.rstrip()
+                key, value = line.split('=', maxsplit=1)
+                envs.append({
+                   'name': key,
+                   'value': value
+                })
     else:
         print("🚨 Not propagating environment variables to container as $BUILDKITE_ENV_FILE is not set")
 
