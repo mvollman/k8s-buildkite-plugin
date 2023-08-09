@@ -63,6 +63,9 @@ volumes = [
 # container.
 if 'BUILDKITE_PLUGIN_K8S_ENV_PROPAGATION_LIST' in os.environ:
    for env in os.environ['BUILDKITE_PLUGIN_K8S_ENV_PROPAGATION_LIST'].split():
+       if env not in os.environ:
+           print(f'Environment variable {env} requested in propagation-list and not defined in environment')
+           sys.exit(1)
        envs.append({
            'name': env,
            'value': os.getenv(env)
