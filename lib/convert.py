@@ -80,7 +80,7 @@ if os.getenv('BUILDKITE_PLUGIN_K8S_PROPAGATE_ENVIRONMENT', 'false') == 'true':
                 key, value = line.split('=', maxsplit=1)
                 envs.append({
                    'name': key,
-                   'value': value.rstrip()
+                   'value': value.rstrip().replace('"', '')
                 })
     else:
         print("🚨 Not propagating environment variables to container as $BUILDKITE_ENV_FILE is not set")
