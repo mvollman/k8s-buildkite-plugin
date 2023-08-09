@@ -61,10 +61,7 @@ volumes = [
 
 # If requested, propagate a set of env vars as listed in a given env var to the
 # container.
-if 'BUILDKITE_PLUGIN_K8S_ENV_PROPAGATION_LIST' not in os.environ:
-   print("env-propagation-list desired, but BUILDKITE_PLUGIN_K8S_ENV_PROPAGATION_LIST is not defined!")
-   sys.exit(1)
-else:
+if 'BUILDKITE_PLUGIN_K8S_ENV_PROPAGATION_LIST' in os.environ:
    for env in os.environ['BUILDKITE_PLUGIN_K8S_ENV_PROPAGATION_LIST'].split():
        envs.append({
            'name': env,
