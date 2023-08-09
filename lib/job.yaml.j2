@@ -2,7 +2,7 @@ apiVersion: batch/v1
 kind: Job
 metadata:
   labels:
-    buildkite/plugin: 'k8s'
+    buildkite/plugin: "k8s"
   name: {{ job_name }}
   namespace: {{ namespace }}
 spec:
@@ -16,14 +16,14 @@ spec:
       annotations:
         cluster-autoscaler.kubernetes.io/safe-to-evict: "false"
       labels:
-        buildkite/plugin: 'k8s'
-        build/branch: {{ branch }}
-        build/pipeline: {{ pipeline }}
-        app: beam-k8s-plugin
-        build_number: {{ build_number }}
-        src-job-id: {{ job_id }}
-        pipeline_slug: {{ pipeline }}
-        job-name: {{ job_name }}
+        buildkite/plugin: "k8s"
+        build/branch: "{{ branch }}"
+        build/pipeline: "{{ pipeline }}"
+        app: "beam-k8s-plugin"
+        build_number: "{{ build_number }}"
+        src-job-id: "{{ job_id }}"
+        pipeline_slug: "{{ pipeline }}"
+        job-name: "{{ job_name }}"
     spec:
       activeDeadlineSeconds: {{ active_deadline_seconds }}
       restartPolicy: 'Never'
