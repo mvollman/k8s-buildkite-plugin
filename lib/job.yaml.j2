@@ -1,7 +1,7 @@
 apiVersion: batch/v1
 kind: Job
 metadata:
-  name: {{ pod_name }}
+  name: {{ job_name }}
   namespace: {{ namespace }}
 spec:
   backoffLimit: {{ backoff_limit }}

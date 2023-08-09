@@ -13,8 +13,9 @@ job_id = os.environ['BUILDKITE_JOB_ID']
 pipeline = os.environ['BUILDKITE_PIPELINE_SLUG']
 branch = os.environ['BUILDKITE_BRANCH']
 namespace = os.getenv('BUILDKITE_PLUGIN_K8S_NAMESPACE', 'default')
-full_pod_name = f'k8splug-{pipeline[:32]}-{job_id}'
-pod_name = full_pod_name[:63].lower()
+#full_pod_name = f'k8splug-{pipeline[:32]}-{job_id}'
+#pod_name = full_pod_name[:63].lower()
+job_name = sys.argv[1]
 args = [os.environ['BUILDKITE_COMMAND']]
 command = ['/bin/sh', '-c']
 envs = []
@@ -27,10 +28,12 @@ security_gid = os.getenv('BUILDKITE_PLUGIN_K8S_GID', '0')
 security_uid = os.getenv('BUILDKITE_PLUGIN_K8S_UID', '0')
 image = os.environ['BUILDKITE_PLUGIN_K8S_IMAGE']
 service_account = os.getenv('BUILDKITE_PLUGIN_K8S_SERVICE_ACCOUNT_NAME', 'default')
-ttl_seconds_after_finished = os.getenv('BUILDKITE_PLUGIN_K8S_JOB_TTL_SECONDS_AFTER_FINISHED', '120')
+#ttl_seconds_after_finished = os.getenv('BUILDKITE_PLUGIN_K8S_JOB_TTL_SECONDS_AFTER_FINISHED', '120')
+ttl_seconds_after_finished = 120
 #active_deadline_seconds = os.getenv('BUILDKITE_TIMEOUT') * 60
-active_deadline_seconds = 0
-backoff_limit = os.getenv('BUILDKITE_PLUGIN_K8S_JOB_BACKOFF_LIMIT', 1)
+active_deadline_seconds = 600
+#backoff_limit = os.getenv('BUILDKITE_PLUGIN_K8S_JOB_BACKOFF_LIMIT', 1)
+backoff_limit = 1
 volume_mounts = [
         {
             'mountPath': '/var/buildkite',
@@ -56,12 +59,12 @@ volumes = [
         }
     ]
 
-with open(f"{script_directory}/pod.yaml.j2", 'r') as pod:
-    pod_template = yaml.safe_load(
+with open(f"{script_directory}/job.yaml.j2", 'r') as job:
+    job_template = yaml.safe_load(
             jinja2.Template(
-                pod.read()
+                job.read()
             ).render(
-                pod_name=pod_name,
+                job_name=job_name,
                 build_number=build_number,
                 job_id=job_id,
                 pipeline=pipeline,
@@ -84,4 +87,4 @@ with open(f"{script_directory}/pod.yaml.j2", 'r') as pod:
             )
     )
 
-print(yaml.safe_dump(pod_template))
+print(yaml.safe_dump(job_template))

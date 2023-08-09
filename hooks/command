@@ -13,7 +13,9 @@ function sanitize() {
   echo "$@" | sed -E 's/[^A-Za-z0-9]/-/g' | sed -E 's/^[^a-zA-Z0-9]|[^a-zA-Z0-9]$//' | cut -c 1-63
 }
 
-job_name=$(sanitize "${BUILDKITE_PIPELINE_SLUG}-${BUILDKITE_BUILD_NUMBER}-$(head -c 5 /dev/urandom | base32 | tr '[:upper:]' '[:lower:]')")
+#job_name=$(sanitize "${BUILDKITE_PIPELINE_SLUG}-${BUILDKITE_BUILD_NUMBER}-$(head -c 5 /dev/urandom | base32 | tr '[:upper:]' '[:lower:]')")
+full_job_name=$(sanitize "k8splug-${BUILDKITE_PIPELINE_SLUG[:32]}-${BUILDKITE_JOB_ID}")
+job_name=${full_job_name[:63]}
 echo "${job_name}" > /tmp/job_name
 
 if [[ ${BUILDKITE_TIMEOUT:-"false"} == "false" ]]; then
@@ -92,7 +94,7 @@ echo "--- :kubernetes: Starting Kubernetes Job"
   #--tla-code patchFunc \
   #"${basedir}/lib/job.jsonnet")"
   #
-python ${basedir}/lib/convert.py
+python ${basedir}/lib/convert.py $job_name
 exit 0
 
 if [[ "$use_agent_node_affinity" == "true" ]]; then
