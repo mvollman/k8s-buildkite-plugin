@@ -92,7 +92,6 @@ if 'BUILDKITE_PLUGIN_K8S_ENVIRONMENT' in os.environ:
                'value': os.getenv(env)
             })
 
-
 # Propagate all environment variables into the container if requested
 if os.getenv('BUILDKITE_PLUGIN_K8S_PROPAGATE_ENVIRONMENT', 'false') == 'true':
     if 'BUILDKITE_ENV_FILE' in os.environ:
@@ -105,6 +104,34 @@ if os.getenv('BUILDKITE_PLUGIN_K8S_PROPAGATE_ENVIRONMENT', 'false') == 'true':
                 })
     else:
         print("🚨 Not propagating environment variables to container as $BUILDKITE_ENV_FILE is not set")
+
+if os.getenv('BUILDKITE_PLUGIN_K8S_PROPAGATE_AWS_AUTH_TOKENS', 'false') != 'false':
+    for aws_var in [
+            'AWS_ACCESS_KEY_ID',
+            'AWS_SECRET_ACCESS_KEY',
+            'AWS_SESSION_TOKEN',
+            'AWS_REGION',
+            'AWS_DEFAULT_REGION',
+            'AWS_ROLE_ARN',
+            'AWS_STS_REGIONAL_ENDPOINTS',
+            'AWS_CONTAINER_CREDENTIALS_FULL_URI',
+            'AWS_CONTAINER_CREDENTIALS_RELATIVE_URI',
+            'AWS_CONTAINER_AUTHORIZATION_TOKEN',
+            'AWS_WEB_IDENTITY_TOKEN_FILE'
+        ]:
+        if aws_var in os.environ:
+            envs.append({
+                'name': aws_var,
+                'value': os.environ[aws_var]
+            })
+
+  # Pass EKS variables when the agent is running in EKS
+  # https://docs.aws.amazon.com/eks/latest/userguide/iam-roles-for-service-accounts-minimum-sdk.html
+  #if [[ -n "${AWS_WEB_IDENTITY_TOKEN_FILE:-}" ]] ; then
+      #args+=( --env "AWS_WEB_IDENTITY_TOKEN_FILE" )
+      # Add the token file as a volume
+      #args+=( --volume "${AWS_WEB_IDENTITY_TOKEN_FILE}:${AWS_WEB_IDENTITY_TOKEN_FILE}" )
+  #fi
 
 with open(f"{script_directory}/job.yaml.j2", 'r') as job:
     job_template = yaml.safe_load(
