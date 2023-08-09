@@ -32,6 +32,7 @@ ttl_seconds_after_finished = os.getenv('BUILDKITE_PLUGIN_K8S_JOB_TTL_SECONDS_AFT
 #ttl_seconds_after_finished = 120
 active_deadline_seconds = 600
 backoff_limit = os.getenv('BUILDKITE_PLUGIN_K8S_JOB_BACKOFF_LIMIT', 1)
+agent_name = os.getenv('BUILDKITE_AGENT_NAME', f'{job_name}-1')
 #backoff_limit = 1
 volume_mounts = [
         {
@@ -39,7 +40,7 @@ volume_mounts = [
             'name': 'buildkite-agent-store'
         },
         {
-            'mountPath': f'/buildkite/builds/{job_name}-1',
+            'mountPath': f'/buildkite/builds/{agent_name}',
             'name': 'buildkite-builds-store'
         }
 ]
@@ -47,7 +48,7 @@ volumes = [
         {
             'name': 'buildkite-builds-store',
             'hostPath': {
-                'path': f'/buildkite/builds/{job_name}-1'
+                'path': f'/buildkite/builds/{agent_name}'
             }
         },
         {
@@ -57,6 +58,32 @@ volumes = [
             }
         }
     ]
+
+# If requested, propagate a set of env vars as listed in a given env var to the
+# container.
+if 'BUILDKITE_PLUGIN_K8S_ENV_PROPAGATION_LIST' not in os.environ:
+   print("env-propagation-list desired, but BUILDKITE_PLUGIN_K8S_ENV_PROPAGATION_LIST is not defined!")
+   sys.exit(1)
+else:
+   for env in os.environ['BUILDKITE_PLUGIN_K8S_ENV_PROPAGATION_LIST'].split():
+       envs.append({
+           'name': env,
+           'value': os.getenv(env)
+        })
+
+
+# Propagate all environment variables into the container if requested
+if os.getenv('BUILDKITE_PLUGIN_DOCKER_PROPAGATE_ENVIRONMENT', 'false') == 'true':
+    if 'BUILDKITE_ENV_FILE' in os.environ:
+        with open(os.environ['BUILDKITE_ENV_FILE'], 'r') as env_file:
+            line = env_file.read()
+            key, value = line.split(maxsplit=1)
+            envs.append({
+               'name': key,
+               'value': value
+            })
+    else:
+        print("🚨 Not propagating environment variables to container as $BUILDKITE_ENV_FILE is not set")
 
 with open(f"{script_directory}/job.yaml.j2", 'r') as job:
     job_template = yaml.safe_load(
