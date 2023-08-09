@@ -59,6 +59,10 @@ volumes = [
         }
     ]
 
+pull_policy = 'IfNotPresent'
+if os.getenv('BUILDKITE_PLUGIN_K8S_ALWAYS_PULL', 'false') == 'true':
+    pull_policy = 'Always'
+
 # If requested, propagate a set of env vars as listed in a given env var to the
 # container.
 if 'BUILDKITE_PLUGIN_K8S_ENV_PROPAGATION_LIST' in os.environ:
@@ -117,6 +121,7 @@ with open(f"{script_directory}/job.yaml.j2", 'r') as job:
                 command=command,
                 envs=envs,
                 image=image,
+                pull_policy=pull_policy,
                 cpu_limits=cpu_limits,
                 memory_limits=memory_limits,
                 cpu_requests=cpu_requests,

@@ -32,7 +32,7 @@ spec:
         command: {{ command }}
         env: {{ envs }}
         image: {{ image }}
-        imagePullPolicy: IfNotPresent
+        imagePullPolicy: {{ pull_policy }}
         name: app
         resources:
           limits:
