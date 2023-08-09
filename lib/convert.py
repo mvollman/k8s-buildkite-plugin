@@ -73,7 +73,7 @@ else:
 
 
 # Propagate all environment variables into the container if requested
-if os.getenv('BUILDKITE_PLUGIN_DOCKER_PROPAGATE_ENVIRONMENT', 'false') == 'true':
+if os.getenv('BUILDKITE_PLUGIN_K8S_PROPAGATE_ENVIRONMENT', 'false') == 'true':
     if 'BUILDKITE_ENV_FILE' in os.environ:
         with open(os.environ['BUILDKITE_ENV_FILE'], 'r') as env_file:
             line = env_file.read()
