@@ -15,7 +15,6 @@ spec:
     metadata:
       annotations:
         cluster-autoscaler.kubernetes.io/safe-to-evict: "false"
-        kubernetes.io/psp: eks.privileged
       labels:
         buildkite/plugin: 'k8s'
         build/branch: {{ branch }}
