@@ -64,12 +64,29 @@ volumes = [
 if 'BUILDKITE_PLUGIN_K8S_ENV_PROPAGATION_LIST' in os.environ:
    for env in os.environ['BUILDKITE_PLUGIN_K8S_ENV_PROPAGATION_LIST'].split():
        if env not in os.environ:
-           print(f'Environment variable {env} requested in propagation-list and not defined in environment')
+           print(f'Environment variable {env} requested in propagation-list and not defined in the agents environment')
            sys.exit(1)
        envs.append({
            'name': env,
            'value': os.getenv(env)
         })
+
+if 'BUILDKITE_PLUGIN_K8S_ENVIRONMENT' in os.environ:
+   for env in os.environ['BUILDKITE_PLUGIN_K8S_ENVIRONMENT'].split():
+       if '=' in env:
+            key, value = env.split('=', maxsplit=1)
+            envs.append({
+               'name': key,
+               'value': value.rstrip().replace('"', '')
+            })
+       else:
+           if env not in os.environ:
+               print(f'Environment variable {env} requested in environment and not defined in the agents environment')
+               sys.exit(1)
+           envs.append({
+               'name': env,
+               'value': os.getenv(env)
+            })
 
 
 # Propagate all environment variables into the container if requested
