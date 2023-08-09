@@ -14,8 +14,7 @@ function sanitize() {
 }
 
 #job_name=$(sanitize "${BUILDKITE_PIPELINE_SLUG}-${BUILDKITE_BUILD_NUMBER}-$(head -c 5 /dev/urandom | base32 | tr '[:upper:]' '[:lower:]')")
-full_job_name=$(sanitize "k8splug-${BUILDKITE_PIPELINE_SLUG[:32]}-${BUILDKITE_JOB_ID}")
-job_name=${full_job_name[:63]}
+job_name=$(echo "k8splug-$(echo ${BUILDKITE_PIPELINE_SLUG} | cut -c1-32)-${BUILDKITE_JOB_ID}" | cut -c1-64)
 echo "${job_name}" > /tmp/job_name
 
 if [[ ${BUILDKITE_TIMEOUT:-"false"} == "false" ]]; then
