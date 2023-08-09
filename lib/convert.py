@@ -28,12 +28,12 @@ security_gid = os.getenv('BUILDKITE_PLUGIN_K8S_GID', '0')
 security_uid = os.getenv('BUILDKITE_PLUGIN_K8S_UID', '0')
 image = os.environ['BUILDKITE_PLUGIN_K8S_IMAGE']
 service_account = os.getenv('BUILDKITE_PLUGIN_K8S_SERVICE_ACCOUNT_NAME', 'default')
-#ttl_seconds_after_finished = os.getenv('BUILDKITE_PLUGIN_K8S_JOB_TTL_SECONDS_AFTER_FINISHED', '120')
-ttl_seconds_after_finished = 120
-#active_deadline_seconds = os.getenv('BUILDKITE_TIMEOUT') * 60
-active_deadline_seconds = 600
-#backoff_limit = os.getenv('BUILDKITE_PLUGIN_K8S_JOB_BACKOFF_LIMIT', 1)
-backoff_limit = 1
+ttl_seconds_after_finished = os.getenv('BUILDKITE_PLUGIN_K8S_JOB_TTL_SECONDS_AFTER_FINISHED', '120')
+#ttl_seconds_after_finished = 120
+active_deadline_seconds = os.getenv('BUILDKITE_TIMEOUT') * 60
+#active_deadline_seconds = 600
+backoff_limit = os.getenv('BUILDKITE_PLUGIN_K8S_JOB_BACKOFF_LIMIT', 1)
+#backoff_limit = 1
 volume_mounts = [
         {
             'mountPath': '/var/buildkite',
@@ -82,6 +82,9 @@ with open(f"{script_directory}/job.yaml.j2", 'r') as job:
                 security_gid=security_gid,
                 security_uid=security_uid,
                 service_account=service_account,
+                ttl_seconds_after_finished=ttl_seconds_after_finished,
+                backoff_limit=backoff_limit,
+                active_deadline_seconds=active_deadline_seconds,
                 volume_mounts=volume_mounts,
                 volumes=volumes
             )
