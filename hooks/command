@@ -93,16 +93,15 @@ echo "--- :kubernetes: Starting Kubernetes Job"
   #--tla-code patchFunc \
   #"${basedir}/lib/job.jsonnet")"
   #
-python ${basedir}/lib/convert.py $job_name
-exit 0
+job_spec="$(python ${basedir}/lib/convert.py $job_name)"
 
-if [[ "$use_agent_node_affinity" == "true" ]]; then
-  agent_spec="$(kubectl get pod "$(cat /etc/hostname)" -o json)"
-  for field in affinity tolerations nodeSelector; do
-    agent_value=$(echo "$agent_spec" | jq ".spec.$field")
-    job_spec="$(echo "$job_spec" | jq ".spec.template.spec.$field=$agent_value")"
-  done
-fi
+#if [[ "$use_agent_node_affinity" == "true" ]]; then
+  #agent_spec="$(kubectl get pod "$(cat /etc/hostname)" -o json)"
+  #for field in affinity tolerations nodeSelector; do
+    #agent_value=$(echo "$agent_spec" | jq ".spec.$field")
+    #job_spec="$(echo "$job_spec" | jq ".spec.template.spec.$field=$agent_value")"
+  #done
+#fi
 
 if [[ "$print_resulting_job_spec" == "true" ]]; then
   echo -e "Resulting k8s job spec:\n$job_spec"

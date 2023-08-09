@@ -1,6 +1,8 @@
 apiVersion: batch/v1
 kind: Job
 metadata:
+  labels:
+    buildkite/plugin: 'k8s'
   name: {{ job_name }}
   namespace: {{ namespace }}
 spec:
@@ -22,6 +24,7 @@ spec:
         build_number: {{ build_number }}
         src-job-id: {{ job_id }}
         pipeline_slug: {{ pipeline }}
+        job-name: {{ job_name }}
     spec:
       activeDeadlineSeconds: {{ active_deadline_seconds }}
       restartPolicy: 'Never'
