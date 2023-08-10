@@ -113,6 +113,7 @@ job_apply_exit_code=""
 while [[ "$((SECONDS - job_apply_start_time))" -lt "$job_apply_timeout_sec" ]]
 do
   set +e
+  kubectl -n buildkite create secret generic --from-env-file=/tmp/env_file $job_name
   echo "$job_spec" | kubectl apply -f -
   job_apply_exit_code="$?"
   set -e

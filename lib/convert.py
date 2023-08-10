@@ -63,6 +63,9 @@ pull_policy = 'IfNotPresent'
 if os.getenv('BUILDKITE_PLUGIN_K8S_ALWAYS_PULL', 'false') == 'true':
     pull_policy = 'Always'
 
+env_file = "/tmp/env_file"
+env_file_handle = open(env_file, 'w')
+
 # If requested, propagate a set of env vars as listed in a given env var to the
 # container.
 if 'BUILDKITE_PLUGIN_K8S_ENV_PROPAGATION_LIST' in os.environ:
@@ -70,26 +73,40 @@ if 'BUILDKITE_PLUGIN_K8S_ENV_PROPAGATION_LIST' in os.environ:
        if env not in os.environ:
            print(f'Environment variable {env} requested in propagation-list and not defined in the agents environment')
            sys.exit(1)
+       env_file_handle.write(f'{env}={os.getenv(env)}')
        envs.append({
            'name': env,
-           'value': os.getenv(env)
+           'valueFrom': {
+               'secretKeyRef': {
+                   'key': env,
+                   'name': job_name
+               }
+           }
         })
 
 if 'BUILDKITE_PLUGIN_K8S_ENVIRONMENT' in os.environ:
    for env in os.environ['BUILDKITE_PLUGIN_K8S_ENVIRONMENT'].split():
        if '=' in env:
-            key, value = env.split('=', maxsplit=1)
-            envs.append({
-               'name': key,
-               'value': value.rstrip().replace('"', '')
-            })
+           key, value = env.split('=', maxsplit=1)
+           env_file_handle.write(f'{key}={value}')
+           envs.append({
+              'name': key,
+               'secretKeyRef': {
+                   'key': key,
+                   'name': job_name
+               }
+           })
        else:
            if env not in os.environ:
                print(f'Environment variable {env} requested in environment and not defined in the agents environment')
                sys.exit(1)
+           env_file_handle.write(f'{env}={os.getenv(env)}')
            envs.append({
                'name': env,
-               'value': os.getenv(env)
+               'secretKeyRef': {
+                   'key': env,
+                   'name': job_name
+               }
             })
 
 # Propagate all environment variables into the container if requested
@@ -98,9 +115,13 @@ if os.getenv('BUILDKITE_PLUGIN_K8S_PROPAGATE_ENVIRONMENT', 'false') == 'true':
         with open(os.environ['BUILDKITE_ENV_FILE'], 'r') as env_file:
             for line in env_file:
                 key, value = line.split('=', maxsplit=1)
+                env_file_handle.write(f'{key}={value}')
                 envs.append({
                    'name': key,
-                   'value': value.rstrip().replace('"', '')
+                   'secretKeyRef': {
+                       'key': key,
+                       'name': job_name
+                   }
                 })
     else:
         print("🚨 Not propagating environment variables to container as $BUILDKITE_ENV_FILE is not set")
@@ -120,9 +141,13 @@ if os.getenv('BUILDKITE_PLUGIN_K8S_PROPAGATE_AWS_AUTH_TOKENS', 'false') != 'fals
             'AWS_WEB_IDENTITY_TOKEN_FILE'
         ]:
         if aws_var in os.environ:
+            env_file_handle.write(f'{aws_var}={os.environ[aws_var]}')
             envs.append({
                 'name': aws_var,
-                'value': os.environ[aws_var]
+                'secretKeyRef': {
+                    'key': aws_var,
+                    'name': job_name
+                }
             })
 
   # Pass EKS variables when the agent is running in EKS
@@ -165,4 +190,5 @@ with open(f"{script_directory}/job.yaml.j2", 'r') as job:
             )
     )
 
+env_file_handle.close()
 print(yaml.safe_dump(job_template))
