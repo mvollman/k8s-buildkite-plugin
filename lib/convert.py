@@ -91,9 +91,11 @@ if 'BUILDKITE_PLUGIN_K8S_ENVIRONMENT' in os.environ:
            env_file_handle.write(f'{key}={value}')
            envs.append({
               'name': key,
-               'secretKeyRef': {
-                   'key': key,
-                   'name': job_name
+              'valueFrom': {
+                   'secretKeyRef': {
+                       'key': key,
+                       'name': job_name
+                    }
                }
            })
        else:
@@ -103,9 +105,11 @@ if 'BUILDKITE_PLUGIN_K8S_ENVIRONMENT' in os.environ:
            env_file_handle.write(f'{env}={os.getenv(env)}')
            envs.append({
                'name': env,
-               'secretKeyRef': {
-                   'key': env,
-                   'name': job_name
+               'valueFrom': {
+                   'secretKeyRef': {
+                       'key': env,
+                       'name': job_name
+                    }
                }
             })
 
@@ -118,9 +122,11 @@ if os.getenv('BUILDKITE_PLUGIN_K8S_PROPAGATE_ENVIRONMENT', 'false') == 'true':
                 env_file_handle.write(f'{key}={value}')
                 envs.append({
                    'name': key,
-                   'secretKeyRef': {
-                       'key': key,
-                       'name': job_name
+                   'valueFrom': {
+                       'secretKeyRef': {
+                           'key': key,
+                           'name': job_name
+                        }
                    }
                 })
     else:
@@ -144,9 +150,11 @@ if os.getenv('BUILDKITE_PLUGIN_K8S_PROPAGATE_AWS_AUTH_TOKENS', 'false') != 'fals
             env_file_handle.write(f'{aws_var}={os.environ[aws_var]}')
             envs.append({
                 'name': aws_var,
-                'secretKeyRef': {
-                    'key': aws_var,
-                    'name': job_name
+                'valueFrom': {
+                    'secretKeyRef': {
+                        'key': aws_var,
+                        'name': job_name
+                    }
                 }
             })
 
