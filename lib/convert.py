@@ -147,7 +147,7 @@ if os.getenv('BUILDKITE_PLUGIN_K8S_PROPAGATE_AWS_AUTH_TOKENS', 'false') != 'fals
             'AWS_WEB_IDENTITY_TOKEN_FILE'
         ]:
         if aws_var in os.environ:
-            env_file_handle.write(f'{aws_var}={os.environ[aws_var]}')
+            env_file_handle.write(f'{aws_var}={os.environ[aws_var]}\n')
             envs.append({
                 'name': aws_var,
                 'valueFrom': {
