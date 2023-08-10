@@ -46,6 +46,7 @@ function cleanup {
   if [[ "$jobs_cleanup_via_plugin" == "true" ]]; then
     # Delete all jobs older than a day.
     kubectl delete job "$(kubectl get job -l buildkite/plugin=k8s | awk 'match($4,/[0-9]+d/) {print $1}')" 2>/dev/null || true
+    kubectl -n buildkite delete secret $job_name
   fi
 }
 
