@@ -30,6 +30,7 @@ spec:
       containers:
       - args: {{ args }}
         command: {{ command }}
+        workingDir: {{ working_dir }}
         env: {{ envs }}
         image: {{ image }}
         imagePullPolicy: {{ pull_policy }}
