@@ -37,7 +37,7 @@ agent_name = os.getenv('BUILDKITE_AGENT_NAME', f'{job_name}-1')
 working_dir = os.getenv('PWD')
 volume_mounts = [
         {
-            'mountPath': f'/var/buildkite/{job_name}',
+            'mountPath': '/var/buildkite',
             'name': 'buildkite-agent-store'
         },
         {
@@ -45,6 +45,7 @@ volume_mounts = [
             'name': 'buildkite-builds-store'
         }
 ]
+
 volumes = [
         {
             'name': 'buildkite-builds-store',
@@ -55,10 +56,10 @@ volumes = [
         {
             'name': 'buildkite-agent-store',
             'hostPath': {
-                'path': f'/var/buildkite/{job_name}'
+                'path': f'/var/buildkite'
             }
         }
-    ]
+]
 
 pull_policy = 'IfNotPresent'
 if os.getenv('BUILDKITE_PLUGIN_K8S_ALWAYS_PULL', 'false') == 'true':
