@@ -33,8 +33,8 @@ active_deadline_seconds = 600
 backoff_limit = os.getenv('BUILDKITE_PLUGIN_K8S_JOB_BACKOFF_LIMIT', 1)
 agent_name = os.getenv('BUILDKITE_AGENT_NAME', f'{job_name}-1')
 #backoff_limit = 1
-working_dir = f'/buildkite/builds/{agent_name}/{org}/{pipeline}'
-#working_dir = os.getenv('PWD')
+#working_dir = f'/buildkite/builds/{agent_name}/{org}/{pipeline}'
+working_dir = os.getenv('PWD')
 volume_mounts = [
         {
             'mountPath': f'/var/buildkite/{job_name}',
@@ -189,6 +189,7 @@ with open(f"{script_directory}/job.yaml.j2", 'r') as job:
                 security_gid=security_gid,
                 security_uid=security_uid,
                 service_account=service_account,
+                working_dir=working_dir,
                 ttl_seconds_after_finished=ttl_seconds_after_finished,
                 backoff_limit=backoff_limit,
                 active_deadline_seconds=active_deadline_seconds,
