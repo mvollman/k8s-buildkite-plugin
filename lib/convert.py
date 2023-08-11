@@ -86,10 +86,10 @@ if 'BUILDKITE_PLUGIN_K8S_ENV_PROPAGATION_LIST' in os.environ:
            }
         })
 
-if 'BUILDKITE_PLUGIN_K8S_ENVIRONMENT' in os.environ:
-   for env in os.environ['BUILDKITE_PLUGIN_K8S_ENVIRONMENT'].split():
-       if '=' in env:
-           key, value = env.split('=', maxsplit=1)
+for env_key in os.environ:
+    if env_key.startswith('BUILDKITE_PLUGIN_K8S_ENVIRONMENT_'):
+       if '=' in env_key:
+           key, value = env_key.split('=', maxsplit=1)
            env_file_handle.write(f'{key}={value}')
            envs.append({
               'name': key,
@@ -101,15 +101,15 @@ if 'BUILDKITE_PLUGIN_K8S_ENVIRONMENT' in os.environ:
                }
            })
        else:
-           if env not in os.environ:
-               print(f'Environment variable {env} requested in environment and not defined in the agents environment')
+           if env_key not in os.environ:
+               print(f'Environment variable {env_key} requested in environment and not defined in the agents environment')
                sys.exit(1)
-           env_file_handle.write(f'{env}={os.getenv(env)}')
+           env_file_handle.write(f'{env_key}={os.getenv(env_key)}')
            envs.append({
-               'name': env,
+               'name': env_key,
                'valueFrom': {
                    'secretKeyRef': {
-                       'key': env,
+                       'key': env_key,
                        'name': job_name
                     }
                }
