@@ -190,7 +190,7 @@ with open(f"{script_directory}/secret.yaml.j2", 'r') as secret:
             ).render(
                 job_name=job_name,
                 namespace=namespace,
-                environment=environment
+                environment_dict=environment
             )
     )
 
