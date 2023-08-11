@@ -86,33 +86,34 @@ if 'BUILDKITE_PLUGIN_K8S_ENV_PROPAGATION_LIST' in os.environ:
            }
         })
 
-for env_key in os.environ:
-    if env_key.startswith('BUILDKITE_PLUGIN_K8S_ENVIRONMENT_'):
-       if '=' in env_key:
-           key, value = env_key.split('=', maxsplit=1)
-           env_file_handle.write(f'{key}={value}')
-           envs.append({
-              'name': key,
-              'valueFrom': {
-                   'secretKeyRef': {
-                       'key': key,
-                       'name': job_name
+for env in os.environ:
+    if env.startswith('BUILDKITE_PLUGIN_K8S_ENVIRONMENT_'):
+        env_key = os.environ[env]
+        if '=' in env_key:
+            key, value = env_key.split('=', maxsplit=1)
+            env_file_handle.write(f'{key}={value}')
+            envs.append({
+                'name': key,
+                'valueFrom': {
+                    'secretKeyRef': {
+                        'key': key,
+                        'name': job_name
                     }
-               }
-           })
-       else:
-           if env_key not in os.environ:
-               print(f'Environment variable {env_key} requested in environment and not defined in the agents environment')
-               sys.exit(1)
-           env_file_handle.write(f'{env_key}={os.getenv(env_key)}')
-           envs.append({
-               'name': env_key,
-               'valueFrom': {
-                   'secretKeyRef': {
-                       'key': env_key,
-                       'name': job_name
+                }
+            })
+        else:
+            if env_key not in os.environ:
+                print(f'Environment variable {env_key} requested in environment and not defined in the agents environment')
+                sys.exit(1)
+            env_file_handle.write(f'{env_key}={os.getenv(env_key)}')
+            envs.append({
+                'name': env_key,
+                'valueFrom': {
+                    'secretKeyRef': {
+                        'key': env_key,
+                        'name': job_name
                     }
-               }
+                }
             })
 
 # Propagate all environment variables into the container if requested
