@@ -1,5 +1,6 @@
 #!/usr/bin/python
 
+import base64
 import jinja2
 import os
 import sys
@@ -105,7 +106,7 @@ for env in os.environ:
             if env_key not in os.environ:
                 print(f'Environment variable {env_key} requested in environment and not defined in the agents environment')
                 sys.exit(1)
-            env_file_handle.write(f'{env_key}="{os.getenv(env_key)}"')
+            env_file_handle.write(f'{env_key}="{base64.b64encode(bytes(os.getenv(env_key), "utf-8")).decode("utf-8")}"')
             envs.append({
                 'name': env_key,
                 'valueFrom': {
