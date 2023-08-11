@@ -8,8 +8,8 @@ import yaml
 
 
 def encode(thing: str) -> str:
-    thing_bytes = bytes(thing, "utf-8")
-    thing_encoded = base64.b16encode(thing_bytes)
+    thing_bytes = thing.encode("utf-8")
+    thing_encoded = base64.b64encode(thing_bytes)
     return thing_encoded.decode("utf-8")
 
 
@@ -183,16 +183,17 @@ if os.getenv('BUILDKITE_PLUGIN_K8S_PROPAGATE_AWS_AUTH_TOKENS', 'false') != 'fals
       #args+=( --volume "${AWS_WEB_IDENTITY_TOKEN_FILE}:${AWS_WEB_IDENTITY_TOKEN_FILE}" )
   #fi
 
-with open(f"{script_directory}/secret.yaml.j2", 'r') as secret:
-    secret_template = yaml.safe_load(
-            jinja2.Template(
-                secret.read()
-            ).render(
-                job_name=job_name,
-                namespace=namespace,
-                environment_dict=environment
-            )
-    )
+if len(environment.keys()) > 0:
+    with open(f"{script_directory}/secret.yaml.j2", 'r') as secret:
+        secret_template = yaml.safe_load(
+                jinja2.Template(
+                    secret.read()
+                ).render(
+                    job_name=job_name,
+                    namespace=namespace,
+                    environment_dict=environment
+                )
+        )
 
 with open(f"{script_directory}/job.yaml.j2", 'r') as job:
     job_template = yaml.safe_load(
