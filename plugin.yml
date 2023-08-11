@@ -2,8 +2,8 @@ name: k8s
 description: Runs your build step as a kubernetes job
 author: https://github.com/dln
 requirements:
-- jq
-- jsonnet
+- python
+- jinja2
 - kubectl
 configuration:
   properties:
