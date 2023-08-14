@@ -8,7 +8,7 @@ import yaml
 
 
 def encode(thing: str) -> str:
-    thing_bytes = thing.encode("utf-8")
+    thing_bytes = thing.rstrip()..encode("utf-8")
     thing_encoded = base64.b64encode(thing_bytes)
     return thing_encoded.decode("utf-8")
 
