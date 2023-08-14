@@ -10,6 +10,8 @@ import yaml
 
 def encode(thing: str) -> str:
     unquoted_thing = re.sub(r'(^\"|\"$)', '', thing.rstrip())
+    if len(unquotes_thing) == 0:
+        return ""
     thing_bytes = unquoted_thing.encode("utf-8")
     thing_encoded = base64.b64encode(thing_bytes)
     return thing_encoded.decode("utf-8")
