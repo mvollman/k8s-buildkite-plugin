@@ -95,6 +95,7 @@ echo "--- :kubernetes: Starting Kubernetes Job"
   #--tla-code patchFunc \
   #"${basedir}/lib/job.jsonnet")"
   #
+env | grep BRANCH
 job_spec="$(python ${basedir}/lib/convert.py $job_name)"
 
 #if [[ "$use_agent_node_affinity" == "true" ]]; then
