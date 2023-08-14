@@ -3,12 +3,14 @@
 import base64
 import jinja2
 import os
+import re
 import sys
 import yaml
 
 
 def encode(thing: str) -> str:
-    thing_bytes = thing.rstrip().encode("utf-8")
+    unquoted_thing = re.sub(r'(^\"|\"$)', '', thing.rstrip())
+    thing_bytes = unquoted_thing.encode("utf-8")
     thing_encoded = base64.b64encode(thing_bytes)
     return thing_encoded.decode("utf-8")
 
@@ -74,8 +76,6 @@ if os.getenv('BUILDKITE_PLUGIN_K8S_ALWAYS_PULL', 'false') == 'true':
     pull_policy = 'Always'
 
 environment = {}
-env_file = "/tmp/env_file"
-env_file_handle = open(env_file, 'w')
 
 # If requested, propagate a set of env vars as listed in a given env var to the
 # container.
@@ -84,7 +84,6 @@ if 'BUILDKITE_PLUGIN_K8S_ENV_PROPAGATION_LIST' in os.environ:
        if env not in os.environ:
            print(f'Environment variable {env} requested in propagation-list and not defined in the agents environment')
            sys.exit(1)
-       env_file_handle.write(f'{env}="{os.getenv(env)}"')
        environment[env] = encode(os.getenv(env))
        envs.append({
            'name': env,
@@ -101,7 +100,6 @@ for env in os.environ:
         env_key = os.environ[env]
         if '=' in env_key:
             key, value = env_key.split('=', maxsplit=1)
-            env_file_handle.write(f'{key}="{value}"')
             environment[key] = encode(value)
             envs.append({
                 'name': key,
@@ -116,7 +114,6 @@ for env in os.environ:
             if env_key not in os.environ:
                 print(f'Environment variable {env_key} requested in environment and not defined in the agents environment')
                 sys.exit(1)
-            env_file_handle.write(f'{env_key}="{base64.b64encode(bytes(os.getenv(env_key), "utf-8")).decode("utf-8")}"')
             environment[env_key] = encode(os.getenv(env_key))
             envs.append({
                 'name': env_key,
@@ -134,7 +131,6 @@ if os.getenv('BUILDKITE_PLUGIN_K8S_PROPAGATE_ENVIRONMENT', 'false') == 'true':
         with open(os.environ['BUILDKITE_ENV_FILE'], 'r') as env_file:
             for line in env_file:
                 key, value = line.split('=', maxsplit=1)
-                env_file_handle.write(f'{key}={value}')
                 environment[key] = encode(value)
                 envs.append({
                    'name': key,
@@ -163,7 +159,6 @@ if os.getenv('BUILDKITE_PLUGIN_K8S_PROPAGATE_AWS_AUTH_TOKENS', 'false') != 'fals
             'AWS_WEB_IDENTITY_TOKEN_FILE'
         ]:
         if aws_var in os.environ:
-            env_file_handle.write(f'{aws_var}={os.environ[aws_var]}\n')
             environment[aws_var] = encode(os.environ[aws_var])
             envs.append({
                 'name': aws_var,
@@ -225,8 +220,6 @@ with open(f"{script_directory}/job.yaml.j2", 'r') as job:
                 volumes=volumes
             )
     )
-
-env_file_handle.close()
 
 with open("secret.yaml", 'w') as secret_write:
     secret_write.write(yaml.safe_dump(secret_template))
