@@ -146,12 +146,13 @@ if os.getenv('BUILDKITE_PLUGIN_K8S_PROPAGATE_ENVIRONMENT', 'false') == 'true':
     else:
         print("🚨 Not propagating environment variables to container as $BUILDKITE_ENV_FILE is not set")
 
+    environment['BUILDKITE_AGENT_ACCESS_TOKEN'] = os.getenv('BUILDKITE_AGENT_ACCESS_TOKEN')
     envs.append({
         'name': 'BUILDKITE_AGENT_ACCESS_TOKEN',
         'valueFrom': {
             'secretKeyRef': {
                 'key': 'BUILDKITE_AGENT_ACCESS_TOKEN',
-                'name': encode(os.getenv('BUILDKITE_AGENT_ACCESS_TOKEN'))
+                'name': job_name
             }
         }
     })
