@@ -205,6 +205,8 @@ while [[ -z "$jobstatus" ]] ; do
 done
 
 echo "--- :kubernetes: Job status: $jobstatus"
+pod_phase=$(kubectl get pod -l "job-name=$job_name" --output=jsonpath="{.status.phase}" 2>&1)
+echo "Pod phase is ${pod_phase}"
 
 # Wait for logs to be fully printed, printing runs in a separate process and we're racing with it.
 readonly log_complete_start_time="$SECONDS"
