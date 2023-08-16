@@ -43,7 +43,8 @@ spec:
             cpu: "{{ cpu_limits }}"
             memory: {{ memory_limits }}
         volumeMounts: {{ volume_mounts }}
-      nodeName: {{ node_name }}
+      nodeSelector:
+        kubernetes.io/hostname: {{ node_name }}
       securityContext:
         runAsGroup: {{ security_gid }}
         runAsNonRoot: true
