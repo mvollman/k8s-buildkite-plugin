@@ -35,8 +35,6 @@ envs = []
 node_name = os.getenv('NODE_NAME')
 cpu_limits = os.getenv('BUILDKITE_PLUGIN_K8S_CPUS', '1')
 memory_limits = os.getenv('BUILDKITE_PLUGIN_K8S_MEMORY', '2G')
-security_gid = os.getenv('BUILDKITE_PLUGIN_K8S_GID', '0')
-security_uid = os.getenv('BUILDKITE_PLUGIN_K8S_UID', '0')
 image = os.environ['BUILDKITE_PLUGIN_K8S_IMAGE']
 service_account = os.getenv('BUILDKITE_PLUGIN_K8S_SERVICE_ACCOUNT_NAME', 'default')
 ttl_seconds_after_finished = os.getenv('BUILDKITE_PLUGIN_K8S_JOB_TTL_SECONDS_AFTER_FINISHED', '120')
@@ -78,6 +76,12 @@ if os.getenv('BUILDKITE_PLUGIN_K8S_ALWAYS_PULL', 'false') == 'true':
     pull_policy = 'Always'
 
 environment = {}
+
+security_gid = os.getenv('BUILDKITE_PLUGIN_K8S_GID', '0')
+security_uid = os.getenv('BUILDKITE_PLUGIN_K8S_UID', '0')
+if os.getenv('BUILDKITE_PLUGIN_K8S_PROPAGATE_UID_GID', 'false') == 'true':
+    security_gid = os.getgid()
+    security_uid = os.getuid()
 
 # If requested, propagate a set of env vars as listed in a given env var to the
 # container.
