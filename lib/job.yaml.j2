@@ -47,7 +47,7 @@ spec:
         kubernetes.io/hostname: {{ node_name }}
       securityContext:
         runAsGroup: {{ security_gid }}
-        runAsNonRoot: true
+        runAsNonRoot: {{ run_as_nonroot }}
         runAsUser: {{ security_uid }}
       serviceAccount: {{ service_account }}
       volumes: {{ volumes }}

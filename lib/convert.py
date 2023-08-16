@@ -79,9 +79,12 @@ environment = {}
 
 security_gid = os.getenv('BUILDKITE_PLUGIN_K8S_GID', '0')
 security_uid = os.getenv('BUILDKITE_PLUGIN_K8S_UID', '0')
+run_as_nonroot = False
 if os.getenv('BUILDKITE_PLUGIN_K8S_PROPAGATE_UID_GID', 'false') == 'true':
     security_gid = os.getgid()
     security_uid = os.getuid()
+    if security_uid != 0:
+        run_as_nonroot = True
 
 # If requested, propagate a set of env vars as listed in a given env var to the
 # container.
